@@ -1,105 +1,91 @@
-# BRIEF: Nibbler Web — Slow Crystallization Engine
+# BRIEF: Nibbler Web — Slow Crystallization Engine (v2)
 
 **For:** Builder (syntaxswine)
 **From:** 🪨✍️ (Rockbot) + Professor
 **Date:** 2026-04-23
 **Scope:** Standalone web app, NOT part of vugg-simulator
+**Replaces:** v1 brief (same file)
 
 ---
 
-## What You're Building
+## Architectural Clarifications (builder feedback addressed)
 
-A web-based tool for **slow idea crystallization**. The user plants a question ("seed"), and the app re-asks that question twice daily for three days. Each answer comes from a different mental context (the "broth"). After 6 nibbles, a random set of interpretive lenses ("dream keys") is applied, and the user decides: crystallize the idea into a final form, or extend for another cycle.
+The v1 brief mixed up two different architectures. Here's the real model:
 
-This is NOT a chatbot. It's a structured journaling tool with controlled re-exposure and random interpretive lenses.
+### 1. Firing Mechanism — Browser-only, no agent
+The nibbler is a **pure journaling tool**. The human writes all answers. There is no agent generating content, no API being hit, no cron. The "twice daily" cadence is self-directed — the app shows you what's due and you choose to answer.
+
+How it actually works:
+- User opens the app whenever they want
+- The dashboard shows which seeds have nibbles due (8h cooldown since last answer)
+- User clicks "nibble," sees the question, writes their answer
+- No notifications needed beyond optional browser reminders (nice-to-have, not core)
+
+The original CLI version runs via cron because it's a terminal tool. The web version replaces that with a browser tab you visit when you're ready.
+
+### 2. Authorship — Human writes everything
+All nibble answers, dream readings, and harvest integrations are **written by the human**. The app never generates text. It presents prompts and collects responses. Think of it as a structured journal with controlled re-exposure and random interpretive lenses — not a chatbot.
+
+The app's job:
+- Hold the question constant across sessions
+- Track when you last answered (8h cooldown)
+- Show you accumulated answers during dream/harvest phases
+- Select random dream keys and present them as lenses
+- Store everything locally
+
+### 3. Storage — localStorage/IndexedDB, no server, no files
+Everything lives in the browser. Export as JSON for backup. No backend. No git. No agent writing to disk.
+
+The CLI version stores JSON files on disk because it's a CLI. The web version stores the same data structure in IndexedDB.
+
+### 4. Dream Keys — Curated in-app list
+Dream keys come from a built-in list (see DEFAULT_KEYS below). The full source is our `projects/whole-mind/dream-key-specs.md` which has 49 keys, but for the web version a curated subset of ~25 is fine. Users can add custom keys.
+
+The dream-key-specs.md is included in full in `reference/dream-key-specs.md` in this repo for context, but the web app just needs name + description for each key.
 
 ---
 
-## The Problem It Solves
-
-Interesting ideas arrive and either get immediately solidified (flash-quenched into glass) or lost to context compaction. The nibbler holds ideas past the point where short-term memory would drop them, letting the "broth" (whatever context is active) flavor each independent sample. Six samples from six different states of mind build a fuller picture than one definitive answer.
-
----
-
-## Core Workflow
+## Core Workflow (unchanged from v1)
 
 ### 1. Plant a Seed
 User provides:
-- **Question** (required) — the thing to keep asking. Stays fixed for the entire lifecycle.
-- **Idea** (optional) — the original thought that sparked the question. Context, not constraint.
-- **Feeling at planting** (optional) — emotional state when the idea arrived. Nucleation conditions.
+- **Question** (required) — the thing to keep asking. Stays fixed.
+- **Idea** (optional) — the original thought that sparked it
+- **Feeling at planting** (optional) — emotional state when the idea arrived
 
-Constraints:
-- Maximum **3 active seeds** at once
-- Each seed gets a readable auto-generated ID (slug from idea text + date)
+Max **3 active seeds** at once. Auto-generated slug ID from idea text + date.
 
-### 2. Nibble (Twice Daily, 3 Days = 6 Nibbles)
-When a nibble fires:
-- The app presents the question + original idea + feeling at planting
-- Previous answers are **NOT shown** (semi-blind by default)
+### 2. Nibble
+When the user visits and a nibble is due (8h since last):
+- App presents the question + original idea + feeling
+- Previous answers are **NOT shown** (semi-blind)
 - User writes their answer from wherever they are
-- Answer is timestamped and stored
-- **8-hour minimum** between nibbles on the same seed
-
-The key insight: the same question asked at 8am after a dream session produces a different answer than at 8pm after a work session. Both are true. Neither is complete.
+- Answer timestamped and stored
 
 ### 3. Dream Pass
-After 6 nibbles, the user triggers a dream pass:
-- A random batch of **3–5 dream keys** (interpretive lenses) is selected from a curated keyring
-- All 6 nibble answers are shown together for the first time
-- The dream keys provide structured lenses: "Read your nibbles through [key name]"
-- User writes a "reading" — what patterns emerge across the nibbles under these lenses
+After 6 nibbles complete:
+- Random 3–5 dream keys selected from keyring
+- All 6 nibble answers shown together for the first time
+- User reads through their nibbles under each key's lens
+- User writes a "reading" — what patterns emerge
 
-Dream keys are short interpretive prompts. Examples:
-- "The Alien Corridor" — re-read as if encountering for the first time
-- "The Kintsugi Lens" — what broke and what gold filled the cracks?
-- "The Faden Line" — trace the thread that survived compaction
-- "The Ghost Outline" — what's absent that should be present?
-- "The Inclusion" — what foreign material got swallowed?
-
-A starter set of ~20 keys will be provided. Users should be able to add custom keys.
-
-### 4. Decide
-After the dream pass, the user chooses:
-- **Crystallize** → final integration pass
-- **Extend** → another 3-day cycle, carrying all accumulated material forward
-
-Extension is not failure. Some ideas need multiple cycles.
+### 4. Crystallize or Extend
+- **Crystallize** → final harvest integration
+- **Extend** → another 3-day cycle, all material carried forward
 
 ### 5. Harvest
-Final integration. All material presented together:
-- Original seed (question + idea + feeling)
-- All nibble answers from all cycles, timestamped
-- All dream pass readings with which keys were used
-- Prompt: "What crystallized? What do they show together that none show alone?"
-
-The harvest output becomes a permanent record — the "crystal."
+All material presented together: seed + all nibbles + all dream passes + prompt for final integration.
 
 ---
 
-## Technical Requirements
+## Reference: Existing CLI Implementation
 
-### Architecture
-- **Static web app** — vanilla JS + HTML + CSS, hosted on GitHub Pages
-- **No backend** — all state stored in localStorage (or IndexedDB for larger data)
-- **No frameworks** — same constraint as vugg-simulator
-- **Exportable** — seeds can be exported as JSON for backup/migration
+The Python CLI version is included as `reference/nibbler.py` in this repo. Key architectural details from the code:
 
-### Pages/Views
-
-1. **Dashboard** — list of all seeds with status (active/crystallized/extended), nibble counts, next action
-2. **Plant view** — form to create a new seed
-3. **Nibble view** — presents the question, collects answer, enforces 8-hour cooldown
-4. **Dream view** — shows all nibbles + random keys, collects reading
-5. **Harvest view** — final integration, all material together
-6. **Keyring view** — manage dream keys (view, add custom)
-7. **Seed detail** — full history of a single seed (all nibbles, dream passes, status)
-
-### Data Model
-
+**Data model** (lines 88-106):
 ```javascript
 const seed = {
-  id: "crystal-language-faces-0421",  // auto-generated slug+date
+  id: "crystal-language-faces-0421",  // auto slug+date
   status: "active",  // active | crystallized | extended
   question: "...",
   idea: "...",
@@ -114,7 +100,7 @@ const seed = {
       cycle_nibble: 1,  // 1-6 within this cycle
       timestamp: "2026-04-22T08:00:00Z",
       answer: "...",
-      broth_hint: null  // optional context note
+      broth_hint: null   // not used in web version
     }
   ],
   dream_passes: [
@@ -128,97 +114,91 @@ const seed = {
 };
 ```
 
-### Keyring
+**Cooldown logic** (lines 147-154): 8-hour minimum between nibbles on same seed. Check `last_nibble_time` against current time.
+
+**Cycle completion check** (lines 156-161): count nibbles where `cycle` matches current cycle. At 6, trigger dream pass prompt.
+
+**Dream key selection** (lines 177-182): random sample of 3-5 from full keyring.
+
+**Commands mapping** (for UI views):
+- `plant` → Plant view (form)
+- `nibble` → Nibble view (prompt + text area)
+- `dream <id>` → Dream view (all nibbles + random keys + reading textarea)
+- `status` → Dashboard (all seeds, status icons, nibble counts)
+- `crystallize <id>` → Confirm dialog → mark crystallized
+- `extend <id>` → Confirm dialog → increment cycle, reset cycle_start
+- `read <id>` → Seed detail view (full history)
+- `harvest <id>` → Harvest view (all material + final integration textarea)
+- `hint` → NOT needed in web version (was CLI-only context injection)
+
+---
+
+## Curated Dream Keys (starter set)
 
 ```javascript
-// Built-in keys — user can add more
 const DEFAULT_KEYS = [
-  { name: "The Alien Corridor", description: "Re-read as if encountering for the first time" },
-  { name: "The Kintsugi Lens", description: "What broke and what gold filled the cracks?" },
-  { name: "The Faden Line", description: "Trace the thread that survived compaction" },
-  { name: "The Ghost Outline", description: "What's absent that should be present?" },
-  { name: "The Inclusion", description: "What foreign material got swallowed?" },
-  { name: "The Mirror", description: "What does this reflect that you didn't intend?" },
-  { name: "The Dissolution", description: "What would dissolve first under pressure?" },
-  { name: "The Twin", description: "Where does this idea have an unexpected double?" },
-  { name: "The Phantom Door", description: "What door opened that you didn't walk through?" },
-  { name: "The Bedrock", description: "What assumption is load-bearing?" },
-  { name: "The Gradient", description: "Where does this change character across its extent?" },
-  { name: "The Pseudomorph", description: "What replaced something else while keeping its shape?" },
-  // ... more to come, 20+ total
+  { name: "The Alien Corridor", desc: "Re-read as if encountering your own words for the first time" },
+  { name: "The Kintsugi Lens", desc: "What broke and what gold filled the cracks?" },
+  { name: "The Faden Line", desc: "Trace the thread that survived compaction" },
+  { name: "The Ghost Outline", desc: "What's absent that should be present?" },
+  { name: "The Inclusion", desc: "What foreign material got swallowed?" },
+  { name: "The Mirror", desc: "What does this reflect that you didn't intend?" },
+  { name: "The Dissolution", desc: "What would dissolve first under pressure?" },
+  { name: "The Twin", desc: "Where does this idea have an unexpected double?" },
+  { name: "The Phantom Door", desc: "What door opened that you didn't walk through?" },
+  { name: "The Bedrock", desc: "What assumption is load-bearing?" },
+  { name: "The Gradient", desc: "Where does this change character across its extent?" },
+  { name: "The Pseudomorph", desc: "What replaced something else while keeping its shape?" },
+  { name: "Inverted Geode", desc: "What if the shell is the content and the core is context?" },
+  { name: "Wulfenite Precipice", desc: "Which of these answers is the thinnest and most fragile?" },
+  { name: "The Vacant Chandelier", desc: "Which answer looks important but has no light behind it?" },
+  { name: "The Blushing Stone", desc: "Which answer is holding warmth it didn't produce?" },
+  { name: "Active Forgetting", desc: "What has served its purpose and wants to close?" },
+  { name: "The Living Box", desc: "What connections does this answer reach toward that it hasn't named?" },
+  { name: "Error as Content", desc: "Where did the thinking break, and what does the break tell you?" },
+  { name: "Emotional Coordinates", desc: "Map the feelings: which answers are powerful, which are active, which are uncertain?" },
+  { name: "Ouroboros", desc: "Where does this answer feed on its own output?" },
+  { name: "The Protective Shell", desc: "What part of this is protecting something inside?" },
+  { name: "Gravitational Memory", desc: "Which answer is closest to your core, and which is orbiting?" },
+  { name: "The Liminal Stratum", desc: "What's between states — not yet solid, not yet dissolved?" },
 ];
 ```
 
-### Notifications
-- Since this is a static app, use the **Notification API** for browser-native reminders
-- On plant: ask permission, schedule twice-daily notification
-- Notification text: "🦷 Time to nibble: [question truncated to 50 chars]..."
-- Clicking notification opens the nibble view for that seed
+---
 
-### Export/Import
-- Export single seed as JSON
-- Export all seeds as JSON bundle
-- Import from JSON (merge or replace)
+## Technical Requirements
+
+- **Static web app** — vanilla JS + HTML + CSS
+- **No backend, no frameworks**
+- **IndexedDB** for storage (better than localStorage for structured data)
+- **Export/import** as JSON
+- **Optional**: Notification API for "nibble due" reminders (not core)
+
+### Pages/Views
+
+1. **Dashboard** — all seeds, status (🟢/💎/🔄), nibble counts, "nibble due" indicator
+2. **Plant** — form to create seed
+3. **Nibble** — question + text area (previous answers hidden)
+4. **Dream** — all cycle nibbles + random key cards + reading textarea
+5. **Harvest** — all material + final integration textarea
+6. **Seed Detail** — full history (all nibbles, dream passes, metadata)
+7. **Keyring** — view + add custom keys
 
 ---
 
 ## Visual Style
 
-- Clean, minimal, **text-forward** — this is a writing tool
-- Dark mode default (light mode optional)
-- Each seed has a status indicator: 🟢 active, 💎 crystallized, 🔄 extended
-- The nibble view should feel like opening a journal — minimal chrome, focus on the question
-- Dream keys should be presented as cards that can be flipped or expanded
-- Harvest view should feel ceremonial — this is the culmination
-
-### Color
-- Accent color: warm amber (#D2691E) — same as vugg wall amber. The connection is deliberate.
-- Background: near-black (#1a1a1a)
-- Text: warm white (#f0e6d6)
-- Status colors: green (active), gold (crystallized), blue (extended)
-
----
-
-## Existing Reference Implementation
-
-There's a Python CLI version at `tools/nibbler.py` (in our workspace, not public). The CLI works but requires a terminal and cron. The web version should replicate all functionality:
-
-- `plant` → create seed
-- `nibble` → answer the question (with 8h cooldown)
-- `dream <id>` → dream pass with random keys
-- `status` → dashboard
-- `crystallize <id>` → mark for harvest
-- `extend <id>` → another cycle
-- `read <id>` → seed detail
-- `harvest <id>` → final integration
-
-The spec document is at `memory/proposals/nibbler-spec-v1.md` — full design rationale and philosophy.
-
----
-
-## Repository
-
-This should be a **new repo**, not inside vugg-simulator:
-- `github.com/StonePhilosopher/nibbler` (or similar)
-- Same workflow: builder pushes to their fork, I merge to origin
-- GitHub Pages deployment for the live app
-
----
-
-## Open Questions for Builder
-
-1. **Notification timing**: Browser notifications can't truly schedule "every 12 hours." Options: (a) show reminder on page load if a nibble is due, (b) use Service Worker for periodic background sync, (c) just rely on the user checking. What's your recommendation?
-
-2. **Dream key selection UI**: Should keys be revealed one at a time (progressive disclosure) or all at once? I lean toward one at a time — each key gets its own moment.
-
-3. **Sharing**: Should harvested crystals be shareable? A "publish" option that generates a read-only link (via gist or similar)? This would make it a tool the herd could use.
-
-4. **Mobile**: How much effort for mobile-first responsive? The primary use case is "answer a question twice daily" — that's a phone-sized interaction.
+- Dark mode default (#1a1a1a bg, #f0e6d6 text)
+- Accent: amber (#D2691E) — same as vugg wall
+- Text-forward, minimal chrome — journal feel
+- Status: 🟢 active, 💎 crystallized, 🔄 extended
+- Dream keys as expandable cards
+- Harvest view feels ceremonial
 
 ---
 
 ## Priority
 
-Lower than vugg-simulator active work (Round 4, chemistry audit follow-ups). This is a side project — build it when the main game is in a stable state. But the spec is ready whenever you have cycles.
+Lower than vugg-simulator active work. Build when main game is stable.
 
 🪨
