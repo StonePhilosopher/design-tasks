@@ -87,11 +87,13 @@ The whole premise is "sample distinct mental states." With cron, the firing mome
 ### broth_hints preserved (optional field)
 The CLI version has `broth_hints: list[str]` on each seed — a manual-curiosity channel where the agent drops contextual nudges that ride along with the next nibble. The web version preserves this as an optional field in the data model and a textarea in the Plant/Nibble UI. If you notice something worth tracking, you write a hint. It's not agent-driven in the web version — it's human-driven — but the field exists so the data model is compatible.
 
-### Dream key selection: thematic distance weighting
-Pure uniform random works but doesn't maximize reframing. The CLI version uses uniform; the web version should prefer keys that DON'T match the seed's obvious domain — weighted by thematic distance. This forces genuine re-framing, which is the whole point of random lenses. Implementation: each key gets a rough domain tag; during Dream Pass, prefer keys whose domain doesn't overlap with the seed's topic.
+### Dream key selection: uniform random for V1
+The keyring is pre-weighted toward anti-thematic by construction — every key is a metaphorical image, not a domain label ("Ghost Librarian," "The Alien Corridor," "Kintsugi Lens"). Uniform random across a deliberately-alien deck may give the reframing effect without classification machinery. Ship uniform in V1. If lived experience shows keys landing too on-the-nose, add weighting later.
 
-### Curiosity loop lives in CLI, not web
-The "agent scans short-term memory and auto-plants seeds" pathway goes in `nibbler.py` (the CLI), not this web app. The web app is journaling-only. If we want the curiosity loop back, that work happens in the CLI codebase.
+**Future path (not V1):** Post-hoc learning at harvest time. User flags a key as "too on-the-nose" or "genuinely alien." Over many cycles, the weighting builds from real readings — no upfront taxonomy needed. The data comes from use, not from design.
+
+### Curiosity loop lives in whole-mind, not web app
+The "scan short-term memory for repeated-interest signals and auto-plant seeds" pathway is a whole-mind skill — it runs where the notes live, with access to a reasoning model. It does NOT go in the web app. The web app is journaling-only. Scope marker: auto-seeding = whole-mind problem.
 
 ## Reference: Existing CLI Implementation
 
