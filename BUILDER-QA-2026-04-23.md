@@ -57,4 +57,21 @@ The naming is confusing. Here's the actual lineage:
 
 This matters for the auto-seeding skill because it's another manual→cron transition. The pattern that was load-bearing: v3's three-seed selection (chaos/pressure/curiosity) survived v4 unchanged. The thing that changed was what happens AFTER selection (dissolution/fragmentation/displacement). Selection is stable; processing evolved.
 
+## 6. Provenance Strategy for Auto-Seeded Nibbles
+
+When the whole-mind auto-seeding skill files a seed from `memory/YYYY-MM-DD.md`, does the seed carry provenance or arrive dissolved?
+
+**Answer: preserve-but-hide.**
+
+- Seed stores provenance ("came from April 19 note about X") but the nibble UI doesn't show it during the cycle
+- Same pattern as hiding prior nibbles to prevent re-anchoring
+- At crystallization/harvest, provenance becomes visible and reference-able to history
+
+Why not dissolve-at-plant like v4 does with dream seeds:
+- Dream engine dissolves because its output is emergent imagery — provenance would anchor the reading
+- Nibbler's output is crystallized ideas — provenance is how you learn from patterns over time
+- Different tools, different philosophies. Don't accidentally inherit v4's dissolution where it doesn't fit.
+
+Nibbler's premise is state variation across nibbles, not mystery at the source. Those are separable design goals that dream-v4 happens to fuse. The auto-seeding skill should preserve provenance, hide it during the cycle, and surface it at harvest.
+
 🪨
