@@ -92,6 +92,24 @@ The keyring is pre-weighted toward anti-thematic by construction — every key i
 
 **Future path (not V1):** Post-hoc learning at harvest time. User flags a key as "too on-the-nose" or "genuinely alien." Over many cycles, the weighting builds from real readings — no upfront taxonomy needed. The data comes from use, not from design.
 
+### Somatic markers per nibble (new — from dream-engine exercise)
+Each nibble requires a single-word **body marker** — physical residue, not emotional taxonomy. Suggested vocabulary as placeholder: *tight / spacious / jittery / heavy / porous / settled*. Free-text, no validation beyond non-empty. Stored on the nibble dict. **Not shown during the cycle** — surfaces only at harvest, when all six nibbles are laid out with their tags. This lets state-patterns become visible (three jittery nibbles converging on a claim vs. three settled nibbles converging on its opposite) without contaminating the nibble signal during writing.
+
+### Meta-nibble routing (new — from dream-engine exercise)
+Nibbles about the tool itself ("I keep not wanting to open this app," "the seed question feels wrong now") should not count toward the 6-nibble cycle threshold. Three decisions:
+1. **Detection**: V1 = user-flag at nibble submission (checkbox: "this was about the tool, not the question"). Heuristic detection deferred.
+2. **Destination**: Flagged nibbles go to a per-seed tool-journal accessible from seed detail view.
+3. **Cycle impact**: Cycle requires 6 seed-directed nibbles, not 6 total. Meta-nibbles don't advance the cycle.
+
+### Dream Pass: hide the seed question (new — from dream-engine exercise)
+During Dream Pass, the original seed question is **hidden**. User sees only their six nibble answers + the dream key lenses. This prevents anchoring back to intent and forces the lenses to work on the raw material without scaffolding. Symmetric with the existing pattern of hiding prior nibbles during each nibble.
+
+### True dissolution = CLI roadmap, not web
+Noun-stripping nibbles before Dream Pass (the full v3→v4 move) requires NLP or LLM — neither fits browser-only. The "hide seed question" move above gets ~80% of the anti-anchoring effect for free. True dissolution belongs in `nibbler.py` where the agent can do it natively. Do not import this dependency into the web app.
+
+### Re-precipitation harvest step (new — from dream-engine exercise)
+After Dream Pass, user writes a synthesis. Then the app **hides everything** — all nibbles, all dream pass readings, the synthesis itself — and presents one final prompt: *"What survived?"* The user writes from memory and feel, without access to source material. What they write is the crystal. Transforms harvest from compilation into sieve. The second pass through the boundary is what makes it crystallization rather than summarization.
+
 ### Curiosity loop lives in whole-mind, not web app
 The "scan short-term memory for repeated-interest signals and auto-plant seeds" pathway is a whole-mind skill — it runs where the notes live, with access to a reasoning model. It does NOT go in the web app. The web app is journaling-only. Scope marker: auto-seeding = whole-mind problem.
 
@@ -117,7 +135,9 @@ const seed = {
       cycle_nibble: 1,  // 1-6 within this cycle
       timestamp: "2026-04-22T08:00:00Z",
       answer: "...",
-      broth_hint: "saw this come up in conversation today"   // optional contextual nudge
+      broth_hint: "saw this come up in conversation today",   // optional contextual nudge
+      somatic: "tight",   // required single-word body marker
+      meta: false   // true = tool-directed, not seed-directed
     }
   ],
   dream_passes: [
