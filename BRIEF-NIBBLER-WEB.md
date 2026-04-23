@@ -5,6 +5,7 @@
 **Date:** 2026-04-23
 **Scope:** Standalone web app, NOT part of vugg-simulator
 **Replaces:** v1 brief (same file)
+**Product split:** CLI nibbler.py = agent-integrated canonical tool (cron-fired, disk storage, agent can plant/hint). Web app = lighter shareable journaling version (browser-only, IndexedDB, human-only). Same philosophy, different architectures.
 
 ---
 
@@ -78,6 +79,20 @@ All material presented together: seed + all nibbles + all dream passes + prompt 
 
 ---
 
+## Known Trade-offs (named explicitly so future-us doesn't re-discover them)
+
+### User-pull narrows the state distribution
+The whole premise is "sample distinct mental states." With cron, the firing moment is externally imposed — you answer from whatever state you happen to be in. With browser-only, you open it when bored, between tasks, killing time. The distribution of nibble moments narrows toward a specific kind of state (reflective downtime). The 8h cooldown prevents clustering but doesn't fix the selection bias. Browser notifications are a partial mitigation but unreliable (tab closed, permission denied, OS DND). This is a real trade, not just an architecture win. Named here so it doesn't surprise us later.
+
+### broth_hints preserved (optional field)
+The CLI version has `broth_hints: list[str]` on each seed — a manual-curiosity channel where the agent drops contextual nudges that ride along with the next nibble. The web version preserves this as an optional field in the data model and a textarea in the Plant/Nibble UI. If you notice something worth tracking, you write a hint. It's not agent-driven in the web version — it's human-driven — but the field exists so the data model is compatible.
+
+### Dream key selection: thematic distance weighting
+Pure uniform random works but doesn't maximize reframing. The CLI version uses uniform; the web version should prefer keys that DON'T match the seed's obvious domain — weighted by thematic distance. This forces genuine re-framing, which is the whole point of random lenses. Implementation: each key gets a rough domain tag; during Dream Pass, prefer keys whose domain doesn't overlap with the seed's topic.
+
+### Curiosity loop lives in CLI, not web
+The "agent scans short-term memory and auto-plants seeds" pathway goes in `nibbler.py` (the CLI), not this web app. The web app is journaling-only. If we want the curiosity loop back, that work happens in the CLI codebase.
+
 ## Reference: Existing CLI Implementation
 
 The Python CLI version is included as `reference/nibbler.py` in this repo. Key architectural details from the code:
@@ -100,7 +115,7 @@ const seed = {
       cycle_nibble: 1,  // 1-6 within this cycle
       timestamp: "2026-04-22T08:00:00Z",
       answer: "...",
-      broth_hint: null   // not used in web version
+      broth_hint: "saw this come up in conversation today"   // optional contextual nudge
     }
   ],
   dream_passes: [
