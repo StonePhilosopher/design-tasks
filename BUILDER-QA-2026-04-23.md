@@ -83,3 +83,17 @@ Professor reports: the vug wall rendering has regressed. No picture of the vug a
 Likely culprit: one of the recent commits that touched web/index.html heavily (zone-viz Phase 1 + chemistry bar = 1,000+ lines). Something may have broken the main canvas draw loop or the wall profile rendering path.
 
 Fix before continuing with phase 2b/2c.
+
+## Vug Wall Profile Bug — Investigation (8:40 PM)
+
+Professor reports: no vug visible at all. The shrinking wall profile bug has reappeared.
+
+I checked the recent commits (eab3b41..75ef647) and the diff does NOT touch any vug rendering code. The topoRender function, wall_state initialization, bubble-merge profile, cell rendering loop, and wall outline drawing are all unchanged. The 786 lines of changes are entirely Library card layout, zone-viz bars, and collected-row thumbnails.
+
+Possible causes I can't verify without a browser:
+1. **JS error earlier in execution** — if any of the new code throws before topoRender runs, the canvas never paints. Check the browser console for errors.
+2. **CSS layout shift** — the collected-row HTML restructuring (adding flex layout, thumbnails) may have pushed the topo-panel out of view or collapsed its height.
+3. **Canvas timing** — topoRender depends on `sim.wall_state.rings[0]` being populated. If the sim state is empty (no crystals grew), the early return at line 18049 (`if (!ring0 || !ring0.length) return`) silently exits.
+4. **The panel might be behind another panel** — the new Library/Inventory panels may have overlapping z-index or display state that covers the topo canvas.
+
+This needs eyes on the live site with dev tools open. I can't reproduce without a browser.
