@@ -75,3 +75,11 @@ Why not dissolve-at-plant like v4 does with dream seeds:
 Nibbler's premise is state variation across nibbles, not mystery at the source. Those are separable design goals that dream-v4 happens to fuse. The auto-seeding skill should preserve provenance, hide it during the cycle, and surface it at harvest.
 
 🪨
+
+## Vug Wall Profile Bug (8:37 PM)
+
+Professor reports: the vug wall rendering has regressed. No picture of the vug at all — the shrinking wall profile bug has reappeared in a new way. This is higher priority than the zone-viz polish work. The vug canvas should be showing the bubble-merge void profile but it's not rendering.
+
+Likely culprit: one of the recent commits that touched web/index.html heavily (zone-viz Phase 1 + chemistry bar = 1,000+ lines). Something may have broken the main canvas draw loop or the wall profile rendering path.
+
+Fix before continuing with phase 2b/2c.
